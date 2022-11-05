@@ -1,13 +1,11 @@
 include(GNUInstallDirs)
 
-add_library(galley STATIC)
+add_library(galley INTERFACE)
 # ALIAS target to export a namespaced target even when building in-tree
 add_library(Galley::galley ALIAS galley)
-# add source files
-add_subdirectory(src)
 # library public header files location
 target_include_directories(
-    galley PUBLIC
+    galley INTERFACE
     # different include directory path depending on if using the local or installed version of library
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -31,12 +29,6 @@ set_target_properties(
 set_property(
     TARGET galley
     APPEND PROPERTY COMPATIBLE_INTERFACE_STRING "${Galley_MAJOR_VERSION}.${Galley_MINOR_VERSION}"
-)
-# inherit common project compiler options
-target_link_libraries(
-    galley
-        PRIVATE
-            $<BUILD_INTERFACE:galley-compiler-options>
 )
 
 # install if we're not being built as a sub-project
