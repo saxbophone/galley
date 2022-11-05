@@ -13,8 +13,6 @@ target_include_directories(
 # set up version and soversion for the main library object
 set_target_properties(
     galley PROPERTIES
-    VERSION ${GALLEY_VERSION_STRING}
-    SOVERSION ${PROJECT_VERSION_MAJOR}
     INTERFACE_Galley_MAJOR_VERSION ${PROJECT_VERSION_MAJOR}
     INTERFACE_Galley_MINOR_VERSION ${PROJECT_VERSION_MINOR}
 )
