@@ -10,14 +10,6 @@ target_include_directories(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-# pass in version of project as preprocessor definitions
-target_compile_definitions(
-    galley PRIVATE
-    -DGALLEY_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-    -DGALLEY_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-    -DGALLEY_VERSION_PATCH=${PROJECT_VERSION_PATCH}
-    -DGALLEY_VERSION_STRING=${GALLEY_ESCAPED_VERSION_STRING}
-)
 # set up version and soversion for the main library object
 set_target_properties(
     galley PROPERTIES
