@@ -96,7 +96,6 @@ namespace {
         std::array<Nullable, N> _square;
         std::array<Nullable, N> _square_root;
     };
-}
 
 namespace com::saxbophone::galley {
     // NOTE: N must be prime!
@@ -108,6 +107,12 @@ namespace com::saxbophone::galley {
         constexpr GF(std::size_t x) : _value(x % N) {}
         constexpr std::size_t get_value() const {
             return _value;
+        }
+        // special Not-A-Number value takes out-of-range value N as its value
+        static constexpr GF NAN() {
+            GF nan;
+            nan._value = N;
+            return nan;
         }
         constexpr operator std::size_t() const {
             return get_value();
@@ -122,7 +127,12 @@ namespace com::saxbophone::galley {
             return *this;
         }
         constexpr GF& operator+=(GF rhs) {
-            set_value(_value + rhs._value);
+            // NAN is a poison value
+            if (rhs == NAN()) {
+                _value = NAN()._value;
+            } else {
+                set_value(_value + rhs._value);
+            }
             return *this;
         }
         friend constexpr GF operator+(GF lhs, const GF& rhs) {
@@ -131,11 +141,21 @@ namespace com::saxbophone::galley {
         }
         // unary minus operator, aka finite field additive inverse
         constexpr GF operator-() const {
-            return _LOOKUP_TABLE.additive_inverse(_value).value();
+            // NAN is a poison value
+            if (_value == N) {
+                return *this;
+            } else {
+                return _LOOKUP_TABLE.additive_inverse(_value).value();
+            }
         }
         constexpr GF& operator-=(GF rhs) {
-            // here's where we apply some finite field arithmetic magic!
-            set_value(_value + (-rhs)._value);
+            // NAN is a poison value
+            if (rhs == NAN()) {
+                _value = NAN()._value;
+            } else {
+                // here's where we apply some finite field arithmetic magic!
+                set_value(_value + (-rhs)._value);
+            }
             return *this;
         }
         friend constexpr GF operator-(GF lhs, const GF& rhs) {
@@ -143,7 +163,12 @@ namespace com::saxbophone::galley {
             return lhs; // return the result by value (uses move constructor)
         }
         constexpr GF& operator*=(GF rhs) {
-            set_value(_value * rhs._value);
+            // NAN is a poison value
+            if (rhs == NAN()) {
+                _value = NAN()._value;
+            } else {
+                set_value(_value * rhs._value);
+            }
             return *this;
         }
         friend constexpr GF operator*(GF lhs, const GF& rhs) {
@@ -151,8 +176,13 @@ namespace com::saxbophone::galley {
             return lhs; // return the result by value (uses move constructor)
         }
         constexpr GF& operator/=(GF rhs) {
-            // here's where we apply some finite field arithmetic magic!
-            set_value(*this * inv(rhs));
+            // NAN is a poison value
+            if (rhs == NAN()) {
+                _value = NAN()._value;
+            } else {
+                // here's where we apply some finite field arithmetic magic!
+                set_value(*this * inv(rhs));
+            }
             return *this;
         }
         friend constexpr GF operator/(GF lhs, const GF& rhs) {
@@ -160,14 +190,31 @@ namespace com::saxbophone::galley {
             return lhs; // return the result by value (uses move constructor)
         }
         static constexpr GF squared(const GF& x) {
+            // NAN is a poison value
+            if (x == NAN()) { return x; }
             return _LOOKUP_TABLE.square(x._value).value();
         }
         static constexpr GF sqrt(const GF& x) {
-            return _LOOKUP_TABLE.square_root(x._value).value();
+            // NAN is a poison value
+            if (x == NAN()) { return x; }
+            auto answer = _LOOKUP_TABLE.square_root(x._value);
+            if (answer.has_value()) { // not all square roots have an answer in GF
+                return answer.value();
+            } else {
+                return NAN();
+            }
         }
         // NOTE: just exposes multiplicative inverse (x⁻¹) in case it's wanted directly
         static constexpr GF inv(const GF& x) {
-            return _LOOKUP_TABLE.multiplicative_inverse(x._value).value();
+            // NAN is a poison value
+            if (x == NAN()) { return x; }
+            // inv(0) has no answer!
+            auto answer = _LOOKUP_TABLE.multiplicative_inverse(x._value);
+            if (answer.has_value()) {
+                return answer.value();
+            } else {
+                return NAN();
+            }
         }
     private:
         // "= {}" in the definition should be redundant, but GCC has a bug where it doesn't abide by P0386, requiring this
