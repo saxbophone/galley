@@ -96,6 +96,7 @@ namespace {
         std::array<Nullable, N> _square;
         std::array<Nullable, N> _square_root;
     };
+}
 
 namespace com::saxbophone::galley {
     // NOTE: N must be prime!
