@@ -9,7 +9,7 @@ else()
     set(GALLEY_SUBPROJECT ON)
 endif()
 
-project(galley VERSION 0.4.0 LANGUAGES CXX)
+project(galley VERSION 0.5.0 LANGUAGES CXX)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
